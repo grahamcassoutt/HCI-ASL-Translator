@@ -11,6 +11,7 @@
 		4A3D616B2CC8B1BE00B98CCC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D616A2CC8B1BE00B98CCC /* ContentView.swift */; };
 		4A3D616D2CC8B1C000B98CCC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A3D616C2CC8B1C000B98CCC /* Assets.xcassets */; };
 		4A3D61702CC8B1C000B98CCC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A3D616F2CC8B1C000B98CCC /* Preview Assets.xcassets */; };
+		4A3D61772CC8B3F100B98CCC /* VideoRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D61762CC8B3F100B98CCC /* VideoRecordingView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		4A3D616A2CC8B1BE00B98CCC /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		4A3D616C2CC8B1C000B98CCC /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4A3D616F2CC8B1C000B98CCC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		4A3D61762CC8B3F100B98CCC /* VideoRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoRecordingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -53,6 +55,7 @@
 			children = (
 				4A3D61682CC8B1BE00B98CCC /* AppDelegate.swift */,
 				4A3D616A2CC8B1BE00B98CCC /* ContentView.swift */,
+				4A3D61762CC8B3F100B98CCC /* VideoRecordingView.swift */,
 				4A3D616C2CC8B1C000B98CCC /* Assets.xcassets */,
 				4A3D616E2CC8B1C000B98CCC /* Preview Content */,
 			);
@@ -139,6 +142,7 @@
 			files = (
 				4A3D616B2CC8B1BE00B98CCC /* ContentView.swift in Sources */,
 				4A3D61692CC8B1BE00B98CCC /* AppDelegate.swift in Sources */,
+				4A3D61772CC8B3F100B98CCC /* VideoRecordingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

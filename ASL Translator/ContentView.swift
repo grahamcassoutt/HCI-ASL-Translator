@@ -2,45 +2,44 @@
 //  ContentView.swift
 //  ASL Translator
 //
-//  Created by Graham Cassoutt on 10/22/24.
+//  Created by Graham Cassoutt on 10/20/24.
 //
 
 import SwiftUI
-import RealityKit
 
-struct ContentView : View {
+struct ContentView: View {
+    @State private var isTracking = false
+
     var body: some View {
-        ARViewContainer().edgesIgnoringSafeArea(.all)
+        NavigationView {
+            VStack {
+                Text("ASL Translator")
+                    .font(.largeTitle)
+                    .padding()
+                
+                Spacer()
+                NavigationLink(destination: ARVideoView(isTracking: $isTracking)) {
+                    Text("Start Translate")
+                        .font(.title)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                        .padding()
+                }
+                
+                Spacer()
+            }
+        }
+        
+    }
+}
+
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
     }
 }
 
-struct ARViewContainer: UIViewRepresentable {
-    
-    func makeUIView(context: Context) -> ARView {
-        
-        let arView = ARView(frame: .zero)
 
-        // Create a cube model
-        let mesh = MeshResource.generateBox(size: 0.1, cornerRadius: 0.005)
-        let material = SimpleMaterial(color: .gray, roughness: 0.15, isMetallic: true)
-        let model = ModelEntity(mesh: mesh, materials: [material])
-        model.transform.translation.y = 0.05
-
-        // Create horizontal plane anchor for the content
-        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.2, 0.2)))
-        anchor.children.append(model)
-
-        // Add the horizontal plane anchor to the scene
-        arView.scene.anchors.append(anchor)
-
-        return arView
-        
-    }
-    
-    func updateUIView(_ uiView: ARView, context: Context) {}
-    
-}
-
-#Preview {
-    ContentView()
-}
