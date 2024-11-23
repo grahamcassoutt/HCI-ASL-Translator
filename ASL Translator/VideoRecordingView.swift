@@ -5,10 +5,15 @@
 //  Created by Graham Cassoutt on 10/20/24.
 //
 
+
+
+
+
 import SwiftUI
 import RealityKit
 import ARKit
 import Vision
+import Foundation
 
 struct ARVideoView: View {
     @Binding var isTracking: Bool
@@ -54,7 +59,6 @@ struct ARViewContainer: UIViewRepresentable {
     @State private var arView = ARView(frame: .zero)
     
     func makeUIView(context: Context) -> ARView {
-        arView = ARView(frame: .zero)
         arView.setupForAR()
         context.coordinator.setupVision()
         arView.session.delegate = context.coordinator
@@ -62,7 +66,7 @@ struct ARViewContainer: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: ARView, context: Context) {
-        // Update logic
+        // Update
     }
 
     func makeCoordinator() -> Coordinator {
@@ -72,9 +76,8 @@ struct ARViewContainer: UIViewRepresentable {
     class Coordinator: NSObject, ARSessionDelegate {
         @Binding var arView: ARView
         private var handPoseRequest = VNDetectHumanHandPoseRequest()
-        private var fingerViews: [UIView] = []
         private var frameCounter = 0
-
+        private var jointData: [[CGPoint]] = []
         init(arView: Binding<ARView>) {
             _arView = arView
         }
@@ -98,17 +101,13 @@ struct ARViewContainer: UIViewRepresentable {
                 guard let results = handPoseRequest.results?.first else { return }
                 updateHandPositions(from: results)
             } catch {
-                print("Failed to perform hand pose  detection: \(error)")
+                print("Failed to perform hand pose detection: \(error)")
             }
         }
 
-        // Update the hand positions
         func updateHandPositions(from observation: VNHumanHandPoseObservation) {
             do {
                 let recognizedPoints = try observation.recognizedPoints(.all)
-
-                fingerViews.forEach { $0.removeFromSuperview() }
-                fingerViews.removeAll()
 
                 guard let frame = arView.session.currentFrame else { return }
                 let imageResolution = frame.camera.imageResolution
@@ -124,32 +123,28 @@ struct ARViewContainer: UIViewRepresentable {
                     .littleTip, .littleDIP, .littlePIP, .littleMCP
                 ]
                 
-                var pointsToProject: [CGPoint] = []
+                var pointsToLog: [CGPoint] = []
                 
                 for joint in fingerJoints {
                     if let point = recognizedPoints[joint], point.confidence > 0.5 {
                         let adjustedX = point.location.x * imageResolution.width * widthScale
                         let adjustedY = (1 - point.location.y) * imageResolution.height * heightScale
-                        pointsToProject.append(CGPoint(x: adjustedX, y: adjustedY))
+                        pointsToLog.append(CGPoint(x: adjustedX, y: adjustedY))
                     }
                 }
                 
                 DispatchQueue.main.async {
-                    self.overlayFingerJoints(pointsToProject)
+                    self.logJointPositions(pointsToLog)
                 }
             } catch {
                 print("Error detecting points: \(error)")
             }
         }
 
-        func overlayFingerJoints(_ points: [CGPoint]) {
-            for point in points {
-                let jointView = UIView(frame: CGRect(x: point.x, y: point.y, width: 10, height: 10))
-                jointView.backgroundColor = .red
-                jointView.layer.cornerRadius = 5
-                arView.addSubview(jointView)
-                fingerViews.append(jointView)
-            }
+        func logJointPositions(_ points: [CGPoint]) {
+            // Output Collected data
+            jointData.append(points)
+            print("\(points) ,")
         }
     }
 }
@@ -169,4 +164,3 @@ struct SettingsView: View {
             .padding()
     }
 }
-

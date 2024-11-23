@@ -12,6 +12,7 @@
 		4A3D616D2CC8B1C000B98CCC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A3D616C2CC8B1C000B98CCC /* Assets.xcassets */; };
 		4A3D61702CC8B1C000B98CCC /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4A3D616F2CC8B1C000B98CCC /* Preview Assets.xcassets */; };
 		4A3D61772CC8B3F100B98CCC /* VideoRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D61762CC8B3F100B98CCC /* VideoRecordingView.swift */; };
+		4AE041722CE935B10051C5F1 /* CoreXLSX in Frameworks */ = {isa = PBXBuildFile; productRef = 4AE041712CE935B10051C5F1 /* CoreXLSX */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4AE041722CE935B10051C5F1 /* CoreXLSX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +88,9 @@
 			dependencies = (
 			);
 			name = "ASL Translator";
+			packageProductDependencies = (
+				4AE041712CE935B10051C5F1 /* CoreXLSX */,
+			);
 			productName = "ASL Translator";
 			productReference = 4A3D61652CC8B1BE00B98CCC /* ASL Translator.app */;
 			productType = "com.apple.product-type.application";
@@ -114,6 +119,9 @@
 				Base,
 			);
 			mainGroup = 4A3D615C2CC8B1BE00B98CCC;
+			packageReferences = (
+				4AE041702CE935B10051C5F1 /* XCRemoteSwiftPackageReference "CoreXLSX" */,
+			);
 			productRefGroup = 4A3D61662CC8B1BE00B98CCC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -352,6 +360,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4AE041702CE935B10051C5F1 /* XCRemoteSwiftPackageReference "CoreXLSX" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/CoreOffice/CoreXLSX.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.14.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4AE041712CE935B10051C5F1 /* CoreXLSX */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4AE041702CE935B10051C5F1 /* XCRemoteSwiftPackageReference "CoreXLSX" */;
+			productName = CoreXLSX;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4A3D615D2CC8B1BE00B98CCC /* Project object */;
 }
