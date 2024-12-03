@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -22,6 +22,10 @@
 		4A3D616F2CC8B1C000B98CCC /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		4A3D61762CC8B3F100B98CCC /* VideoRecordingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoRecordingView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		4AA4AC1A2CFF6B2200CE8CD7 /* Model */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Model; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		4A3D61622CC8B1BE00B98CCC /* Frameworks */ = {
@@ -53,6 +57,7 @@
 		4A3D61672CC8B1BE00B98CCC /* ASL Translator */ = {
 			isa = PBXGroup;
 			children = (
+				4AA4AC1A2CFF6B2200CE8CD7 /* Model */,
 				4A3D61682CC8B1BE00B98CCC /* AppDelegate.swift */,
 				4A3D616A2CC8B1BE00B98CCC /* ContentView.swift */,
 				4A3D61762CC8B3F100B98CCC /* VideoRecordingView.swift */,
@@ -84,6 +89,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				4AA4AC1A2CFF6B2200CE8CD7 /* Model */,
 			);
 			name = "ASL Translator";
 			productName = "ASL Translator";

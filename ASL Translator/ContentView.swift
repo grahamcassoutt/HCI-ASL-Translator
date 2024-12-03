@@ -9,30 +9,67 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var isTracking = false
+    @State private var showInfo = false
 
     var body: some View {
         NavigationView {
             VStack {
-                Text("ASL Translator")
-                    .font(.largeTitle)
-                    .padding()
+                Spacer().frame(height: 100)
+            
                 
-                Spacer()
-                NavigationLink(destination: ARVideoView(isTracking: $isTracking)) {
-                    Text("Start Translate")
-                        .font(.title)
+                VStack(spacing: 20) {
+                    Text("ASL Translator")
+                        .font(.system(size: 60))
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 300, maxHeight: 175)
                         .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                        .padding()
+                    
+                    NavigationLink(destination: ARVideoView(isTracking: $isTracking)) {
+                        Text("Start Translate")
+                            .font(.system(size: 50))
+                            .padding()
+                            .frame(maxWidth: 300, maxHeight: 160)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(15)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding()
                 
                 Spacer()
             }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showInfo.toggle()
+                    }) {
+                        Image(systemName: "info.circle")
+                            .font(.title)
+                    }
+                }
+            }
+            .sheet(isPresented: $showInfo) {
+                InfoView()
+            }
         }
-        
+    }
+}
+
+struct InfoView: View {
+    var body: some View {
+        VStack {
+            Text("ASL Translator Info")
+                .font(.largeTitle)
+                .padding()
+            
+            Text("This app translates American Sign Language (ASL) gestures into text using AR technology.")
+                .font(.body)
+                .multilineTextAlignment(.center)
+                .padding()
+            
+            Spacer()
+        }
     }
 }
 
@@ -41,5 +78,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-
-
