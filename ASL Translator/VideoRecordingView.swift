@@ -9,183 +9,160 @@ import SwiftUI
 import RealityKit
 import ARKit
 import Vision
-import CoreML
+import Foundation
+import Combine
 
 struct ARVideoView: View {
-    @Binding var isTracking: Bool
-    @State private var isCapturing: Bool = false
-    @State private var isUsingFrontCamera: Bool = false
-    @State private var predictedLetters: String = "" // Holds the sequence of predicted letters
-
+    @State private var isTracking: Bool = false
+    @State private var predictedLetter: String = ""
+    @State private var useFrontCamera: Bool = false
+    
     var body: some View {
-        VStack {
+        VStack(spacing: 20) {
+            Text("Capture Sign")
+                .font(.title)
+                .padding()
             ZStack {
-                ARViewContainer(isTracking: $isTracking, isCapturing: $isCapturing, isUsingFrontCamera: $isUsingFrontCamera, predictedLetters: $predictedLetters)
-                    .frame(width: UIScreen.main.bounds.width * 0.8, height: UIScreen.main.bounds.height * 0.65)
+                ARViewContainer(isTracking: $isTracking, predictedLetter: $predictedLetter, useFrontCamera: $useFrontCamera)
+                                .frame(width: UIScreen.main.bounds.width * 0.9, height: UIScreen.main.bounds.height * 0.5)
+                                .cornerRadius(15)
+                                .shadow(radius: 10)
                 
                 VStack {
                     Spacer()
-
-                    // Prediction Text Box
-                    ScrollView {
-                        Text(predictedLetters)
-                            .font(.largeTitle)
-                            .foregroundColor(.blue)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color.white.opacity(0.8))
-                            .cornerRadius(10)
-                            .padding()
+                    HStack {
+                        // Flip Camera
+                        Button(action: {
+                            useFrontCamera.toggle()
+                        }) {
+                            Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
+                                .resizable()
+                                .frame(width: 40, height: 40)
+                                .foregroundColor(.gray)
+                                .padding()
+                                .background(
+                                    Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 30, height: 30)
+                                )
+                                .cornerRadius(20)
+                                .shadow(radius: 5)
+                        }
+                        .padding([.leading, .bottom], 20)
+                        Spacer()
                     }
-                    .frame(height: 100)
                 }
             }
 
-            HStack(spacing: 20) {
+            HStack(spacing: 0) {
                 Button(action: {
-                    flipCamera()
+                    isTracking.toggle()
                 }) {
-                    Image(systemName: "arrow.clockwise")
+                    Text(isTracking ? "Stop" : "Start")
                         .font(.title)
                         .foregroundColor(.white)
                         .padding()
-                        .background(Color.gray)
-                        .clipShape(Circle())
-                        .shadow(radius: 4)
+                        .frame(maxWidth: .infinity)
+                        .background(isTracking ? Color.red : Color.blue)
+                        .cornerRadius(12)
+                        .padding(.horizontal)
                 }
-
-                Button(action: {
-                    isCapturing = true
-                    print("Capture started")
-                }) {
-                    Text("Start")
-                        .font(.title3)
+                NavigationLink(destination: EditTextView(text: $predictedLetter)) {
+                    Text("Finished")
+                        .font(.title)
                         .foregroundColor(.white)
                         .padding()
-                        .frame(width: 120)
-                        .background(Color.green)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
                         .cornerRadius(12)
-                }
-
-                Button(action: {
-                    isCapturing = false
-                    print("Capture stopped")
-                }) {
-                    Text("End")
-                        .font(.title3)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(width: 120)
-                        .background(Color.red)
-                        .cornerRadius(12)
+                        .padding(.horizontal)
                 }
             }
-            .padding()
-        }
-        .navigationBarTitle("Capture Sign", displayMode: .inline)
-    }
 
-    private func flipCamera() {
-        isUsingFrontCamera.toggle()
+            ScrollView {
+                Text(predictedLetter)
+                    .font(.title2)
+                    .foregroundColor(.black)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(height: 100)
+            .background(Color.white)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.black, lineWidth: 2)
+            )
+            .padding(.horizontal)
+        }
+        .padding(.bottom)
     }
 }
 
+// Camera Window
 struct ARViewContainer: UIViewRepresentable {
     @Binding var isTracking: Bool
-    @Binding var isCapturing: Bool
-    @Binding var isUsingFrontCamera: Bool
-    @Binding var predictedLetters: String
-    var arView = ARView(frame: .zero)
+    @Binding var predictedLetter: String
+    @Binding var useFrontCamera: Bool
 
-    init(isTracking: Binding<Bool>, isCapturing: Binding<Bool>, isUsingFrontCamera: Binding<Bool>, predictedLetters: Binding<String>) {
-        _isTracking = isTracking
-        _isCapturing = isCapturing
-        _isUsingFrontCamera = isUsingFrontCamera
-        _predictedLetters = predictedLetters
-    }
-
+    
     func makeUIView(context: Context) -> ARView {
-        setupARView(usingFrontCamera: isUsingFrontCamera)
-        arView.session.delegate = context.coordinator
+        let arView = ARView(frame: .zero)
+        arView.setupForAR(usingFrontCamera: useFrontCamera)
         context.coordinator.setupVision()
+        arView.session.delegate = context.coordinator
         return arView
     }
-
+    
     func updateUIView(_ uiView: ARView, context: Context) {
-        if context.coordinator.isUsingFrontCamera != isUsingFrontCamera {
-            uiView.session.pause()
-            setupARView(usingFrontCamera: isUsingFrontCamera)
-            context.coordinator.isUsingFrontCamera = isUsingFrontCamera
-        }
-        context.coordinator.isCapturing = isCapturing
+        uiView.setupForAR(usingFrontCamera: useFrontCamera)
     }
-
+    
     func makeCoordinator() -> Coordinator {
-        return Coordinator(arView: arView, isCapturing: $isCapturing, isUsingFrontCamera: isUsingFrontCamera, predictedLetters: $predictedLetters)
+        return Coordinator(isTracking: $isTracking, predictedLetter: $predictedLetter)
     }
-
-    private func setupARView(usingFrontCamera: Bool) {
-        let configuration: ARConfiguration
-        if usingFrontCamera {
-            let faceConfig = ARFaceTrackingConfiguration()
-            faceConfig.isWorldTrackingEnabled = true
-            configuration = faceConfig
-        } else {
-            let worldConfig = ARWorldTrackingConfiguration()
-            worldConfig.environmentTexturing = .none
-            worldConfig.planeDetection = []
-            configuration = worldConfig
-        }
-        arView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
-    }
-
+    
     class Coordinator: NSObject, ARSessionDelegate {
-        var arView: ARView
-        @Binding var isCapturing: Bool
-        var isUsingFrontCamera: Bool
-        @Binding var predictedLetters: String
+        @Binding var isTracking: Bool
+        @Binding var predictedLetter: String
+        
+        private var curPredicting = ""
+        private var predictionsCorrect = 0
         private var handPoseRequest = VNDetectHumanHandPoseRequest()
         private var frameCounter = 0
-        private var lastUpdateTime: TimeInterval = 0
-        private var isProcessingPrediction = false
-
-        init(arView: ARView, isCapturing: Binding<Bool>, isUsingFrontCamera: Bool, predictedLetters: Binding<String>) {
-            self.arView = arView
-            _isCapturing = isCapturing
-            self.isUsingFrontCamera = isUsingFrontCamera
-            _predictedLetters = predictedLetters
+        private let predictionQueue = DispatchQueue(label: "PredictionQueue", qos: .background)
+        
+        init(isTracking: Binding<Bool>, predictedLetter: Binding<String>) {
+            _isTracking = isTracking
+            _predictedLetter = predictedLetter
         }
-
+        
         func setupVision() {
             handPoseRequest.maximumHandCount = 1
         }
-
+        
         func session(_ session: ARSession, didUpdate frame: ARFrame) {
-            guard isCapturing else { return }
-
-            let currentTime = Date().timeIntervalSince1970
-            if currentTime - lastUpdateTime < 5.0 { return }
-            lastUpdateTime = currentTime
-
+            guard isTracking else { return }
+            
             frameCounter += 1
-            if frameCounter % 10 == 0 {
+            if frameCounter % 15 == 0 {
                 let pixelBuffer = frame.capturedImage
                 processFrame(pixelBuffer)
             }
         }
-
+        
         func processFrame(_ frame: CVPixelBuffer) {
             let handler = VNImageRequestHandler(cvPixelBuffer: frame, orientation: .up, options: [:])
             do {
                 try handler.perform([handPoseRequest])
                 guard let results = handPoseRequest.results?.first else { return }
-                processHandPositions(from: results)
+                updateHandPositions(from: results)
             } catch {
                 print("Failed to perform hand pose detection: \(error)")
             }
         }
-
-        func processHandPositions(from observation: VNHumanHandPoseObservation) {
+        
+        func updateHandPositions(from observation: VNHumanHandPoseObservation) {
             do {
                 let recognizedPoints = try observation.recognizedPoints(.all)
                 let fingerJoints: [VNHumanHandPoseObservation.JointName] = [
@@ -195,71 +172,109 @@ struct ARViewContainer: UIViewRepresentable {
                     .ringTip, .ringDIP, .ringPIP, .ringMCP,
                     .littleTip, .littleDIP, .littlePIP, .littleMCP
                 ]
-
-                var inputArray: [Double] = []
+                var points: [CGPoint] = []
+                
                 for joint in fingerJoints {
-                    if let point = recognizedPoints[joint] {
-                        inputArray.append(point.location.x)
-                        inputArray.append(point.location.y)
-                    } else {
-                        inputArray.append(0.0)
-                        inputArray.append(0.0)
+                    if let point = recognizedPoints[joint], point.confidence > 0.5 {
+                        points.append(point.location)
                     }
                 }
-
-                // Use the machine learning model
-                predictLetter(from: inputArray)
+                
+                predictionQueue.async { [weak self] in
+                    self?.predictLetter(from: points)
+                }
             } catch {
-                print("Error processing hand positions: \(error)")
+                print("Error detecting points: \(error)")
             }
         }
-
-        func predictLetter(from inputArray: [Double]) {
-            guard let model = try? LogisticRegressionModel(configuration: .init()) else {
-                print("Failed to load model")
-                return
-            }
-
-            // Ensure the input array has the required number of features
-            guard inputArray.count == 40 else {
-                print("Invalid input array size: expected 40 features, got \(inputArray.count)")
-                return
-            }
-
-            // Prevent overlapping predictions
-            guard !isProcessingPrediction else { return }
-            isProcessingPrediction = true
-
-            // Perform prediction on a background thread
-            DispatchQueue.global(qos: .userInitiated).async {
-                do {
-                    let modelInput = LogisticRegressionModelInput(
-                        feature0: inputArray[0], feature1: inputArray[1], feature2: inputArray[2], feature3: inputArray[3],
-                        feature4: inputArray[4], feature5: inputArray[5], feature6: inputArray[6], feature7: inputArray[7],
-                        feature8: inputArray[8], feature9: inputArray[9], feature10: inputArray[10], feature11: inputArray[11],
-                        feature12: inputArray[12], feature13: inputArray[13], feature14: inputArray[14], feature15: inputArray[15],
-                        feature16: inputArray[16], feature17: inputArray[17], feature18: inputArray[18], feature19: inputArray[19],
-                        feature20: inputArray[20], feature21: inputArray[21], feature22: inputArray[22], feature23: inputArray[23],
-                        feature24: inputArray[24], feature25: inputArray[25], feature26: inputArray[26], feature27: inputArray[27],
-                        feature28: inputArray[28], feature29: inputArray[29], feature30: inputArray[30], feature31: inputArray[31],
-                        feature32: inputArray[32], feature33: inputArray[33], feature34: inputArray[34], feature35: inputArray[35],
-                        feature36: inputArray[36], feature37: inputArray[37], feature38: inputArray[38], feature39: inputArray[39]
-                    )
-
-                    let prediction = try model.prediction(input: modelInput)
-
-                    DispatchQueue.main.async {
-                        self.predictedLetters.append(prediction.class_0)
-                        if self.predictedLetters.count > 50 {
-                            self.predictedLetters.removeFirst(self.predictedLetters.count - 50)
-                        }
-                        self.isProcessingPrediction = false
-                    }
-                } catch {
-                    print("Prediction error: \(error)")
-                    self.isProcessingPrediction = false
+        
+        func predictLetter(from points: [CGPoint]) {
+            guard points.count >= 20 else { return }
+            
+            let inputArray = points.flatMap { [$0.x, $0.y] }
+            guard inputArray.count == 40 else { return }
+//            print(points)
+//            print(",")
+//            return
+//            
+            do {
+                let featureMapping = Dictionary(uniqueKeysWithValues: zip(0..<40, inputArray))
+                let modelInput = PositionsLogisticRegression4Input(
+                    feature_1: featureMapping[0] ?? 0,
+                    feature_2: featureMapping[1] ?? 0,
+                    feature_3: featureMapping[2] ?? 0,
+                    feature_4: featureMapping[3] ?? 0,
+                    feature_5: featureMapping[4] ?? 0,
+                    feature_6: featureMapping[5] ?? 0,
+                    feature_7: featureMapping[6] ?? 0,
+                    feature_8: featureMapping[7] ?? 0,
+                    feature_9: featureMapping[8] ?? 0,
+                    feature_10: featureMapping[9] ?? 0,
+                    feature_11: featureMapping[10] ?? 0,
+                    feature_12: featureMapping[11] ?? 0,
+                    feature_13: featureMapping[12] ?? 0,
+                    feature_14: featureMapping[13] ?? 0,
+                    feature_15: featureMapping[14] ?? 0,
+                    feature_16: featureMapping[15] ?? 0,
+                    feature_17: featureMapping[16] ?? 0,
+                    feature_18: featureMapping[17] ?? 0,
+                    feature_19: featureMapping[18] ?? 0,
+                    feature_20: featureMapping[19] ?? 0,
+                    feature_21: featureMapping[20] ?? 0,
+                    feature_22: featureMapping[21] ?? 0,
+                    feature_23: featureMapping[22] ?? 0,
+                    feature_24: featureMapping[23] ?? 0,
+                    feature_25: featureMapping[24] ?? 0,
+                    feature_26: featureMapping[25] ?? 0,
+                    feature_27: featureMapping[26] ?? 0,
+                    feature_28: featureMapping[27] ?? 0,
+                    feature_29: featureMapping[28] ?? 0,
+                    feature_30: featureMapping[29] ?? 0,
+                    feature_31: featureMapping[30] ?? 0,
+                    feature_32: featureMapping[31] ?? 0,
+                    feature_33: featureMapping[32] ?? 0,
+                    feature_34: featureMapping[33] ?? 0,
+                    feature_35: featureMapping[34] ?? 0,
+                    feature_36: featureMapping[35] ?? 0,
+                    feature_37: featureMapping[36] ?? 0,
+                    feature_38: featureMapping[37] ?? 0,
+                    feature_39: featureMapping[38] ?? 0,
+                    feature_40: featureMapping[39] ?? 0
+                )
+                
+                let model = try PositionsLogisticRegression4(configuration: .init())
+                let prediction = try model.prediction(input: modelInput)
+                
+                if curPredicting == prediction.label {
+                    predictionsCorrect += 1
+                } else {
+                    predictionsCorrect = 0
                 }
+                
+                curPredicting = prediction.label
+                
+                if predictionsCorrect == 4 {
+                    predictionsCorrect = 0
+                    DispatchQueue.main.async {
+                        self.predictedLetter += prediction.label + " "
+                    }
+                }
+            } catch {
+                print("Error making prediction: \(error)")
             }
         }
+    }
+}
+
+extension ARView {
+    func setupForAR(usingFrontCamera: Bool) {
+        let configuration: ARConfiguration
+        if usingFrontCamera {
+            configuration = ARFaceTrackingConfiguration()
+        } else {
+            configuration = ARWorldTrackingConfiguration()
+        }
+        self.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        self.automaticallyConfigureSession = false
     }
 }

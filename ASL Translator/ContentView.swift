@@ -24,7 +24,7 @@ struct ContentView: View {
                         .frame(maxWidth: 300, maxHeight: 175)
                         .padding()
                     
-                    NavigationLink(destination: ARVideoView(isTracking: $isTracking)) {
+                    NavigationLink(destination: ARVideoView()) {
                         Text("Start Translate")
                             .font(.system(size: 50))
                             .padding()
